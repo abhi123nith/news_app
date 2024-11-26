@@ -231,3 +231,41 @@ class NewsDetailPage extends StatelessWidget {
 }
 
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Bookmarks"),
+      ),
+      body: bookmarks.isEmpty
+          ? const Center(
+              child: Text("No bookmarks yet"),
+            )
+          : ListView.builder(
+              itemCount: bookmarks.length,
+              itemBuilder: (context, index) {
+                final article = bookmarks[index];
+                return ListTile(
+                  title: Text(
+                    article['title'] ?? "No Title",
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    article['description'] ?? "No Description",
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => NewsDetailPage(article: article),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+    );
+  }
+}
