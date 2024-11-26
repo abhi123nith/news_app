@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   runApp(const NewsApp());
@@ -136,9 +137,17 @@ class NewsDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String? imageUrl = article['urlToImage'];
+    final String title = article['title'] ?? "No Title";
+    final String content = article['content'] ?? "No Content Available";
+    final String description = article['description'] ?? "No Description";
+    final String? publishedAt = article['publishedAt'];
+
+    final bool isTruncated = content.contains('… [+') && content.contains('chars]');
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(article['title'] ?? "Article"),
+        title: const Text("Details Page"),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -146,22 +155,73 @@ class NewsDetailPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              article['urlToImage'] != null
-                  ? Image.network(article['urlToImage'])
-                  : const SizedBox.shrink(),
+              // image (if available)
+              if (imageUrl != null)
+                Image.network(
+                  imageUrl,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                ),
               const SizedBox(height: 16),
+
+              //  title
               Text(
-                article['title'] ?? "No Title",
+                title,
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 16),
+
+              //description
               Text(
-                article['content'] ?? "No Content Available",
+                description,
+                style: const TextStyle(
+                  fontSize: 18,
+                  color: Colors.black54,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              //content
+              Text(
+                isTruncated
+                    ? "$content\n\nRead the full article below:"
+                    : content,
                 style: const TextStyle(fontSize: 16),
               ),
+              const SizedBox(height: 16),
+
+              if (isTruncated && article['url'] != null)
+                TextButton(
+                  onPressed: () {
+                    final String url = article['url']!;
+                    launchUrl(Uri.parse(url));
+                  },
+                  child: const Text(
+                    "Read Full Article",
+                    style: TextStyle(
+                      color: Colors.blue,
+                      fontSize: 16,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+
+              // Display the published date if available
+              if (publishedAt != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: Text(
+                    "Published on: ${DateTime.parse(publishedAt).toLocal()}",
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
@@ -169,3 +229,5 @@ class NewsDetailPage extends StatelessWidget {
     );
   }
 }
+
+
